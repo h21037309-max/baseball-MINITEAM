@@ -181,26 +181,68 @@ df["姓名"]=df["姓名"].astype(str).str.strip()
 df=df.fillna(0)
 
 
-
 # ======================
-# ADMIN 球員中心
+# ⭐ ADMIN 球員中心（完全穩定版）
 # ======================
 
 if IS_ADMIN:
 
     st.header("🏆 球員管理中心")
 
-    select_player=st.selectbox(
+    # ⭐ 清理姓名資料（超重要）
+    user_df["姓名"]=user_df["姓名"].astype(str).str.strip()
 
-    "選擇球員",
+    # ⭐ 去除空值
+    player_list=sorted(
 
-    user_df["姓名"]
+        user_df["姓名"]
+        .dropna()
+        .unique()
+        .tolist()
 
     )
 
-    info=user_df[user_df["姓名"]==select_player].iloc[0]
+    # ⭐ 沒人防炸
+    if len(player_list)==0:
 
-    player_name=select_player
+        st.warning("沒有球員")
+
+        st.stop()
+
+
+    # ⭐ 選擇球員
+    select_player=st.selectbox(
+
+        "選擇球員",
+
+        player_list,
+
+        key="admin_player_select"
+
+    )
+
+    player_name=str(select_player).strip()
+
+
+    # ⭐ 找球員資料
+    info=user_df[
+
+    user_df["姓名"].astype(str).str.strip()
+    ==player_name
+
+    ]
+
+
+    # ⭐ 找不到防炸
+    if info.empty:
+
+        st.error("找不到球員資料")
+
+        st.stop()
+
+
+    info=info.iloc[0]
+
 
     team_default=info["球隊"]
 
@@ -208,27 +250,16 @@ if IS_ADMIN:
 
 
 
-# ⭐ 全部球員排行榜
+    # ======================
+    # ⭐ 全部球員排行榜
+    # ======================
 
-if not df.empty:
+    if not df.empty:
 
-    st.subheader("📊 全部球員累積排行榜")
-
-    # ⭐只留下還存在users.csv的姓名
-    valid_players=user_df["姓名"].astype(str).str.strip().tolist()
-
-    valid_df=df[
-        df["姓名"].astype(str).str.strip().isin(valid_players)
-    ]
+        st.subheader("📊 全部球員累積排行榜")
 
 
-    if valid_df.empty:
-
-        st.info("目前沒有資料")
-
-    else:
-
-        summary=valid_df.groupby(
+        summary=df.groupby(
 
         ["球隊","背號","姓名"],
 
@@ -259,25 +290,29 @@ if not df.empty:
 
 
         summary["長打率"]=(
+
         TB/summary["打數"]
+
         ).round(3).fillna(0)
 
 
         summary["OPS"]=(
-        summary["上壘率"]
-        +summary["長打率"]
+        summary["上壘率"]+
+        summary["長打率"]
         ).round(3)
 
 
         st.dataframe(
 
-        summary.sort_values(
-        "OPS",
-        ascending=False
-        ),
+        summary.sort_values("OPS",ascending=False),
 
         use_container_width=True
+
         )
+
+else:
+
+    player_name=str(login_name).strip()
 
 # ======================
 # ⭐ 個人累積統計（超穩定修正版）
@@ -555,6 +590,7 @@ if IS_ADMIN:
             st.success("帳號與全部紀錄已刪除")
 
             st.rerun()
+
 
 
 
