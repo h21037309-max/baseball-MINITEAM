@@ -12,7 +12,7 @@ DATA_FILE="data.csv"
 USER_FILE="users.csv"
 
 
-ADMINS=["洪仲平","楊振銓","張管理員"]
+ADMINS=["洪仲平","楊振銓","郭子聖"]
 
 
 # ======================
@@ -486,4 +486,5 @@ if IS_ADMIN:
             st.success("帳號與全部紀錄已刪除")
 
             st.rerun()
+
 
