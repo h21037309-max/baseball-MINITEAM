@@ -16,25 +16,55 @@ ADMINS=["洪仲平","楊振銓","張管理員"]
 
 
 # ======================
-# users 初始化
+# users 初始化（含多管理員）
 # ======================
 
 if not os.path.exists(USER_FILE):
 
-    pd.DataFrame([{
+    pd.DataFrame([
 
+    {
     "帳號":"admin",
     "密碼":"admin123",
     "姓名":"洪仲平",
     "球隊":"ADMIN",
     "背號":0
+    },
 
-    }]).to_csv(USER_FILE,index=False)
+    {
+    "帳號":"000",
+    "密碼":"000",
+    "姓名":"郭子聖",
+    "球隊":"ADMIN",
+    "背號":0
+    }
+
+    ]).to_csv(USER_FILE,index=False)
 
 
 user_df=pd.read_csv(USER_FILE)
 
 
+# ⭐ 如果 users.csv 已存在也補上000帳號
+
+if "000" not in user_df["帳號"].astype(str).values:
+
+    new_admin=pd.DataFrame([{
+
+    "帳號":"000",
+    "密碼":"000",
+    "姓名":"郭子聖",
+    "球隊":"ADMIN",
+    "背號":0
+
+    }])
+
+    user_df=pd.concat(
+        [user_df,new_admin],
+        ignore_index=True
+    )
+
+    user_df.to_csv(USER_FILE,index=False)
 
 # ======================
 # 登入 / 註冊
@@ -456,3 +486,4 @@ if IS_ADMIN:
             st.success("帳號與全部紀錄已刪除")
 
             st.rerun()
+
