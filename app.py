@@ -208,13 +208,27 @@ if IS_ADMIN:
 
 
 
-    # ⭐ 全部球員排行榜
+# ⭐ 全部球員排行榜
 
-    if not df.empty:
+if not df.empty:
 
-        st.subheader("📊 全部球員累積排行榜")
+    st.subheader("📊 全部球員累積排行榜")
 
-        summary=df.groupby(
+    # ⭐只留下還存在users.csv的姓名
+    valid_players=user_df["姓名"].astype(str).str.strip().tolist()
+
+    valid_df=df[
+        df["姓名"].astype(str).str.strip().isin(valid_players)
+    ]
+
+
+    if valid_df.empty:
+
+        st.info("目前沒有資料")
+
+    else:
+
+        summary=valid_df.groupby(
 
         ["球隊","背號","姓名"],
 
@@ -224,38 +238,46 @@ if IS_ADMIN:
 
 
         TB=(
+
         summary["1B"]
         +summary["2B"]*2
         +summary["3B"]*3
         +summary["HR"]*4
+
         )
 
 
-        summary["打擊率"]=(summary["安打"]/summary["打數"]).round(3).fillna(0)
+        summary["打擊率"]=(
+        summary["安打"]/summary["打數"]
+        ).round(3).fillna(0)
+
 
         summary["上壘率"]=(
         (summary["安打"]+summary["BB"])/
         (summary["打數"]+summary["BB"]+summary["SF"])
         ).round(3).fillna(0)
 
-        summary["長打率"]=(TB/summary["打數"]).round(3).fillna(0)
+
+        summary["長打率"]=(
+        TB/summary["打數"]
+        ).round(3).fillna(0)
+
 
         summary["OPS"]=(
-        summary["上壘率"]+summary["長打率"]
+        summary["上壘率"]
+        +summary["長打率"]
         ).round(3)
 
 
         st.dataframe(
 
-        summary.sort_values("OPS",ascending=False),
+        summary.sort_values(
+        "OPS",
+        ascending=False
+        ),
 
-        use_container_width=True)
-
-else:
-
-    player_name=login_name
-
-
+        use_container_width=True
+        )
 
 # ======================
 # 個人累積統計
@@ -486,6 +508,7 @@ if IS_ADMIN:
             st.success("帳號與全部紀錄已刪除")
 
             st.rerun()
+
 
 
 
