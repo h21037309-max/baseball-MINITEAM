@@ -280,12 +280,26 @@ if not df.empty:
         )
 
 # ======================
-# 個人累積統計
+# ⭐ 個人累積統計（超穩定修正版）
 # ======================
 
 st.header("📊 個人累積統計")
 
-player_df=df[df["姓名"]==player_name]
+
+# ⭐ ADMIN 看選擇的人
+if IS_ADMIN:
+
+    player_df=df[
+    df["姓名"].astype(str).str.strip()
+    ==str(player_name).strip()
+    ]
+
+else:
+
+    player_df=df[
+    df["姓名"].astype(str).str.strip()
+    ==str(login_name).strip()
+    ]
 
 
 if player_df.empty:
@@ -294,42 +308,75 @@ if player_df.empty:
 
 else:
 
-    total=player_df.sum(numeric_only=True)
+    numeric_cols=[
+
+    "打席","打數","得分","打點","安打",
+
+    "1B","2B","3B","HR",
+
+    "BB","SF","SH","SB"
+
+    ]
+
+    for col in numeric_cols:
+
+        if col not in player_df.columns:
+
+            player_df[col]=0
+
+
+    total=player_df[numeric_cols].sum()
+
 
     AB=total["打數"]
-
     H=total["安打"]
-
     BB=total["BB"]
-
     SF=total["SF"]
 
+
     TB=(
+
     total["1B"]
     +total["2B"]*2
     +total["3B"]*3
     +total["HR"]*4
+
     )
+
 
     AVG=round(H/AB,3) if AB>0 else 0
 
-    OBP=round((H+BB)/(AB+BB+SF),3) if (AB+BB+SF)>0 else 0
 
-    SLG=round(TB/AB,3) if AB>0 else 0
+    OBP=round(
+
+    (H+BB)/(AB+BB+SF)
+
+    ,3) if (AB+BB+SF)>0 else 0
+
+
+    SLG=round(
+
+    TB/AB
+
+    ,3) if AB>0 else 0
+
 
     OPS=round(OBP+SLG,3)
 
+
     c1,c2,c3,c4,c5,c6=st.columns(6)
 
-    c1.metric("打數",int(total["打數"]))
+    c1.metric("打席",int(total["打席"]))
+
     c2.metric("安打",int(H))
+
     c3.metric("打擊率",AVG)
+
     c4.metric("上壘率",OBP)
+
     c5.metric("長打率",SLG)
+
     c6.metric("OPS",OPS)
-
-
-
 # ======================
 # 新增紀錄
 # ======================
@@ -508,6 +555,7 @@ if IS_ADMIN:
             st.success("帳號與全部紀錄已刪除")
 
             st.rerun()
+
 
 
 
